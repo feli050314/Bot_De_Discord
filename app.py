@@ -1,36 +1,67 @@
 import discord
-from psw import gen_pass
-# La variable intents almacena los privilegios del bot
+import random
+from discord.ext import commands
+
 intents = discord.Intents.default()
-# Activar el privilegio de lectura de mensajes
 intents.message_content = True
-# Crear un bot en la variable cliente y transferirle los privilegios
-client = discord.Client(intents=intents)
 
-@client.event
+bot = commands.Bot(command_prefix='/', intents=intents)
+
+emojis = [
+    "😀", "😄", "😁", "😂", "🤣", "😊", "😇", "😉", "😍", "😘",  # Caritas felices
+    "😎", "🤩", "🥳", "🤗", "🤔", "😐", "😴", "🤤", "😢", "😭",  # Emociones varias
+    "😡", "😱", "😳", "🥶", "🥵", "🤯", "😈", "👻", "💀", "🤖",  # Locuras y sustos
+    "🐶", "🐱", "🐭", "🐹", "🐰", "🐻", "🐼", "🐨", "🐸", "🐵",  # Animales
+    "🌸", "🌻", "🌲", "🌴", "🍀", "🍁", "🍄", "🌞", "🌈", "⭐",  # Naturaleza
+    "🍎", "🍌", "🍉", "🍇", "🍓", "🍔", "🍕", "🍟", "🍩", "🍪",  # Comida
+    "⚽", "🏀", "🎮", "🎲", "🎵", "🎤", "🎬", "🎨", "✈️", "🚗",  # Actividades y objetos
+    "🎁", "🎉", "💌", "❤️", "💔", "🔥", "💧", "⭐", "🌙", "☀️"   # Cosas lindas y símbolos
+]
+
+@bot.event
 async def on_ready():
-    print(f'Hemos iniciado sesión como {client.user}')
+    print(f'We have logged in as {bot.user}')
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    if message.content.startswith('$hola'):
-        await message.channel.send("Hola, como esta tu día!")
-    elif message.content.startswith('$psw'):
-        await message.channel.send(f"Aquí está tu contraseña {gen_pass(8)}")
-    elif message.content.startswith('$que_es_python'):
-        await message.channel.send("Python el mejor lenguaje de programación de todos los tiempos.")
-    elif message.content.startswith('$chau'):
-        await message.channel.send("\U0001f642")
-    elif message.content.startswith('$como_estas'):
-        await message.channel.send("bien y tu?")
-    elif message.content.startswith('$bien'):
-        await message.channel.send("Genial")
-    elif message.content.startswith('$genial'):
-        await message.channel.send("Que bien")
+@bot.command()
+async def hello(ctx):
+    await ctx.send(f'Hola, soy un bot {bot.user}!')
+
+@bot.command()
+async def bye(ctx):
+    await ctx.send('Chau!')
+
+@bot.command()
+async def heh(ctx, count_heh = 5):
+    await ctx.send("he" * count_heh)
+
+@bot.command()
+async def emoji(ctx, num = 1):
+    for i in range(num):
+        respuesta = random.choice(emojis)
+        await ctx.send(respuesta)
+
+
+@bot.command()
+async def suma(ctx, left: int, right: int):
+    """Adds two numbers together."""
+    await ctx.send(left + right)
+
+@bot.command()
+async def resta(ctx, left: int, right: int):
+    """Adds two numbers together."""
+    await ctx.send(left - right)
+
+@bot.command()
+async def adivina(ctx):
+    numero_secreto = random.randint(1, 10)
+    await ctx.send("Estoy pensando en un número del 1 al 10... ¿Cuál crees que es? 🤔")
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+    msg = await bot.wait_for("message", check=check)
+    respuesta = int(msg.content)
+    if respuesta == numero_secreto:
+        await ctx.send("🎉 ¡Adivinaste! Eres genial 😎")
     else:
-        await message.channel.send(message.content)
+        await ctx.send(f"❌ Nope, el número secreto era **{numero_secreto}**")
 
-token = "ingresa tu token"
-client.run(token)
+bot.run("ingresa tu token")
